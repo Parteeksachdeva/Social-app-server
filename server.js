@@ -5,7 +5,8 @@ var cors = require('cors')
 const mongoose = require("mongoose")
 
 const UserDetail = require("./Scema/User")
-const PostMessage = require("./Scema/Posts")
+const PostMessage = require("./Scema/Posts");
+
 
 app.use(cors()) 
 app.use(express.json())
@@ -23,6 +24,34 @@ app.get("/",authentecate,(req,res)=>{
     res.send(req.user.name);
 })
 
+app.get("/posts",async (req,res)=>{
+    const posts= await PostMessage.find()
+    res.json(posts)
+});
+
+app.post("/posts/like",async (req,res)=>{
+    const {id,likeCount} = req.body
+    const post=PostMessage.findById(id)
+    await PostMessage.findOneAndUpdate(
+        {
+          _id: id,
+        },
+        {
+         likeCount
+        }
+      )
+})
+
+app.post("/posts",async (req,res)=>{
+    const {title,username}=req.body
+    const Posts =await new  PostMessage({
+        username: username,
+        title:title,
+    });
+        
+    await Posts.save();
+    res.json("success")
+})
 
 app.post("/register",async (req,res)=>{
     const {username,password}=req.body;
@@ -39,12 +68,6 @@ app.post("/register",async (req,res)=>{
 })
 app.post("/login",async (req,res)=>{
     const {username,password}=req.body;
-
-    // const Posts =await new  PostMessage({
-    //         username: username
-    //     });
-    
-    //     await Posts.save();
     const user=await UserDetail.find({username: username,})
     //  console.log(user)
 
